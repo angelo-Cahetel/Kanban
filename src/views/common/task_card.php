@@ -20,7 +20,7 @@
         <!-- botões de editar e excluir visiveis se o usuário tiver permissão -->
         <?php if ($_SESSION['user_id'] == $task['usuario_id']  || $_SESSION['user_type'] === 'GERENTE'): ?>
             <a href="edit_task.php?id=<?= $task['tarefa_id'] ?>" class="btn-edit">Editar</a>
-            <a href="delete_task.php?id=<?= $task['tarefa_id'] ?>" class="btn-delete" onclick="return confirm('Você tem certeza que deseja excluir esta tarefa?')">Excluir</a>
-            <?php endif; ?>
+            <a href="/../public/index.php?action=deleteTask&id=<?= $task['tarefa_id'] ?>" class="btn-delete" onclick="return confirm('Você tem certeza que deseja excluir esta tarefa?')">Excluir</a>
+        <?php endif; ?>
     </div>
 </div>

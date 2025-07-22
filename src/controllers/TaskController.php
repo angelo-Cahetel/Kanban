@@ -20,7 +20,7 @@ class TaskController {
     // protege as rotas, redirecionado se não estiver logado
     private function requireAuth() {
         if (!isset($_SESSION['user_id'])) {
-            header("Lication: /../public/index.php");
+            header("Location: /../public/index.php?action=showLogin");
             exit();
         }
     }
@@ -46,6 +46,12 @@ class TaskController {
         foreach ($tasks as $task) {
             $tasksByStatus[$task['status']][] = $task;
         }
+        if (isset($_SESSION['edit_task_data'])) {
+            $editTaskData = json_encode($_SESSION['edit_task_data']);
+            unset($_SESSION['edit_task_data']); // limpa os dados após o uso
+        } else {
+            $editTaskData = 'null';
+        }
         include __DIR__ . '/../views/tasks/index.php';
     }
 
@@ -53,7 +59,7 @@ class TaskController {
     public function showCreate() {
         $this->requireAuth();
 
-        header("Location: /../public/views/index.php");
+        header("Location: /../public/views/index.php?action=tasks");
         exit();
     }
 
@@ -77,7 +83,7 @@ class TaskController {
                 }
             }
         }
-        header("Location: /../public/views/index.php");
+        header("Location: /../public/views/index.php?action=tasks");
         exit();
     }
 
@@ -88,7 +94,7 @@ class TaskController {
         $task_id = $_GET['id'] ?? null;
         if (!$task_id) {
             $_SESSION['error_message'] = "ID da tarefa não fornecido.";
-            header("Location: /../public/views/index.php");
+            header("Location: /../public/views/index.php?action=tasks");
             exit();
         }
 
@@ -96,14 +102,14 @@ class TaskController {
 
         if (!$task) {
             $_SESSION['error_message'] = "Tarefa não encontrada.";
-            header("Location: /../public/views/index.php");
+            header("Location: /../public/views/index.php?action=tasks");
             exit();
         }
 
         // verificação de permissão 
         if ($_SESSION['user_type'] !== 'GERENTE' && $_SESSION['user_id'] != $task['usuario_id']) {
             $_SESSION['error_message'] = "Você não tem permissão para editar esta tarefa.";
-            header("Location: /../public/views/index.php");
+            header("Location: /../public/views/index.php?action=tasks");
             exit();
         }
 
@@ -112,7 +118,83 @@ class TaskController {
         } else {
             $_SESSION['error_message'] = "Erro ao excluir a tarefa. Por favor, tente novamente.";
         }
-        header("Location: /../public/views/index.php");
+        header("Location: /../public/views/index.php?action=tasks");
+        exit();
+    }
+
+    // atualiza uma tarefa
+    public function updade() {
+        $this->requireAuth();
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->task->tarefa_id = $_POST['tarefa_id'] ?? null;
+            $this->task->titulo = $_POST['titulo'] ?? '';
+            $this->task->descricao = $_POST['descricao'] ?? '';
+            $this->task->prioridade = $_POST['prioridade'] ?? 'MEDIA';
+            $this->task->status = $_POST['status'] ?? 'A_FAZER';
+
+            $existingTask = $this->task->getTaskById($this->task->tarefa_id);
+
+            if (!$existingTask) {
+                $_SESSION['error_message'] = "Tarefa não encontrada.";
+                header("Location: /../public/views/index.php?action=tasks");
+                exit();
+            }
+            // verificação de permissão
+            if ($_SESSION['user-type'] !== 'GERENTE' && $_SESSION['user_id'] != $existingTask['usuario_id']) {
+                $_SESSION['error_message'] = "Você não tem permissão para atualizar esta tarefa.";
+                header("Location: /../public/views/index.php?action=tasks");
+                exit();
+            }
+
+            if (empty($this->task->titulo)) {
+                $_SESSION['error_message'] = "O título da tarefa é obrigatório.";
+            } else {
+                if ($this->task->updateTask()) {
+                    $_SESSION['success_message'] = "Tarefa atualizada com sucesso!";
+                } else {
+                    $_SESSION['error_message'] = "Erro ao atualizar a tarefa. Por favor, tente novamente.";
+                }
+            }
+        }
+        header("Location: /../public/views/index.php?action=tasks");
+        exit();
+    }
+
+    // exclui uma tarefa
+    public function delete() {
+        $this->requireAuth();
+
+        $task_id = $_GET['id'] ?? null;
+
+        if (!$task_id) {
+            $_SESSION['error_message'] = "ID da tarefa não fornecido.";
+            header("Location: /../public/views/index.php?action=tasks");
+            exit();
+        }
+
+        $existingTask = $this->task->getTaskById($task_id);
+
+        if (!$existingTask) {
+            $_SESSION['error_message'] = "Tarefa não encontrada.";
+            header("Location: /../public/views/index.php?action=tasks");
+            exit();
+        }
+
+        // verificação de permissão
+        if ($_SESSION['user_type'] !== 'GERENTE' && $_SESSION['user_id'] != $existingTask['usuario_id']) {
+            $_SESSION['error_message'] = "Você não tem permissão para excluir esta tarefa.";
+            header("Location: /../public/views/index.php?action=tasks");
+            exit();
+        }
+
+        if ($this->task->deleteTask($task_id)) {
+            $_SESSION['success_message'] = "Tarefa excluída com sucesso!";
+        } else {
+            $_SESSION['error_message'] = "Erro ao excluir tarefa";
+        }
+
+        header("Location: /../public/views/index.php?action=tasks");
         exit();
     }
 

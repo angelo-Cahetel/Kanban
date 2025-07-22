@@ -23,7 +23,7 @@ class AuthController
     public function showLogin()
     {
         if (isset($_SESSION['user_id'])) {
-            header("Location: /index.php");
+            header("Location: /../public/index.php?action=tasks"); // redireciona para o dashboard se já estiver logado
             exit();
         }
         include __DIR__ . '/../views/auth/login.php';
@@ -44,7 +44,7 @@ class AuthController
                     $_SESSION['user_email'] = $this->user->email;
                     $_SESSION['user_type'] = $this->user->tipo_usuario; // armazena o tipo de usuário
 
-                    header("LocatioNn: /index.php"); // redireciona para o dashboard
+                    header("LocatioNn: /../public/index.php?action=tasks"); // redireciona para o dashboard
                     exit();
                 } else {
                     $error = "Senha incorreta.";
@@ -83,7 +83,7 @@ class AuthController
                 if ($this->user->register()) {
                     $success = "Registro realizado com sucesso! Você pode fazer login agora.";
                     // redireciona para a página de login
-                    header("Refresh: 2; url=/public/index.php");
+                    header("Refresh: 2; url=/public/index.php?action=showLogin");
                 } else {
                     $error = "Erro ao registrar usuário.";
                 }
@@ -98,7 +98,7 @@ class AuthController
     {
         session_unset(); // remove as variáveis de sessão
         session_destroy(); // destrói a sessão
-        header("Location: /public/index.php"); // redireciona para a página inicial
+        header("Location: /../public/index.php?action=showLogin"); // redireciona para a página inicial
         exit();
     }
 }
