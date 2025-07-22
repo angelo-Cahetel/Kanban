@@ -41,25 +41,36 @@ class Task
     public $data_fim;
 
     // método para criar uma nova tarefa
-    public function createTask() {
+    public function createTask()
+    {
         $query = "INSERT INTO " . $this->table_name . "
-                  SET
-                    usuario_id = :usuario_id,
-                    titulo = :titulo,
-                    descricao = :descricao,
-                    prioridade = :prioridade";
+        (usuario_id, titulo, descricao, prioridade, status, data_inicio, data_fim)
+        VALUES (:usuario_id, :titulo, :descricao, :prioridade, :status, :data_inicio, :data_fim)";
 
         $stmt = $this->conn->prepare($query);
 
-        $this->usuario_id = htmlspecialchars(strip_tags($this->usuario_id));
-        $this->titulo = htmlspecialchars(strip_tags($this->titulo));
-        $this->descricao = htmlspecialchars(strip_tags($this->descricao));
-        $this->prioridade = htmlspecialchars(strip_tags($this->prioridade));
+        $this->usuario_id = htmlspecialchars(strip_tags($this->usuario_id ?? ''));
+        $this->titulo = htmlspecialchars(strip_tags($this->titulo ?? ''));
+        $this->descricao = htmlspecialchars(strip_tags($this->descricao ?? ''));
+        $this->prioridade = htmlspecialchars(strip_tags($this->prioridade ?? ''));
+        $this->status = htmlspecialchars(strip_tags($this->status ?? ''));
+        error_log("valor do status antes de bindParam: " . $this->status);
 
-        $stmt->bindParam(':usuario_id', $this->usuario_id);
-        $stmt->bindParam(':titulo', $this->titulo);
-        $stmt->bindParam(':descricao', $this->descricao);
-        $stmt->bindParam(':prioridade', $this->prioridade);
+        $this->data_inicio = $this->data_inicio ?: null;
+        $this->data_fim = $this->data_fim ?: null;
+
+        $stmt->bindParam(":usuario_id", $this->usuario_id);
+        $stmt->bindParam(":titulo", $this->titulo);
+        $stmt->bindParam(":descricao", $this->descricao);
+        $stmt->bindParam(":prioridade", $this->prioridade);
+        $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":data_inicio", $this->data_inicio);
+        $stmt->bindParam(":data_fim", $this->data_fim);
+
+        error_log("DEBUG: Valor de data_inicio sendo enviado: '" . ($this->data_inicio ?? 'NULL') . "'");
+        error_log("DEBUG: Valor de data_fim sendo enviado: '" . ($this->data_fim ?? 'NULL') . "'");
+        error_log("DEBUG: Valor do status sendo enviado: " . $this->status);
+
 
         if ($stmt->execute()) {
             return true;
@@ -68,7 +79,8 @@ class Task
     }
 
     // método para obter uma tarefa por ID
-    public function getTaskById($tarefa_id) {
+    public function getTaskById($tarefa_id)
+    {
         $query = "SELECT t.*, u.nome as nome_usuario
                   FROM " . $this->table_name . " t
                   JOIN usuarios u ON t.usuario_id = u.usuario_id
@@ -83,28 +95,35 @@ class Task
     }
 
     // método para atualizar uma tarefa
-    public function updateTask() {
+    public function updateTask()
+    {
         $query = "UPDATE " . $this->table_name . "
                     SET
                         titulo = :titulo,
                         descricao = :descricao,
                         prioridade = :prioridade,
                         status = :status,
+                        data_inicio = :data_inicio,
+                        data_fim = :data_fim
                   WHERE 
                     tarefa_id = :tarefa_id";
 
         $stmt = $this->conn->prepare($query);
 
-        $this->titulo = htmlspecialchars(strip_tags($this->titulo));
-        $this->descricao = htmlspecialchars(strip_tags($this->descricao));
-        $this->prioridade = htmlspecialchars(strip_tags($this->prioridade));
-        $this->status = htmlspecialchars(strip_tags($this->status));
+        $this->titulo = htmlspecialchars(strip_tags($this->titulo ?? ''));
+        $this->descricao = htmlspecialchars(strip_tags($this->descricao ?? ''));
+        $this->prioridade = htmlspecialchars(strip_tags($this->prioridade ?? ''));
+        $this->status = htmlspecialchars(strip_tags($this->status ?? ''));
         $this->tarefa_id = htmlspecialchars(strip_tags($this->tarefa_id));
+        $this->data_inicio = $this->data_inicio ?: null;
+        $this->data_fim = $this->data_fim ?: null;
 
         $stmt->bindParam(':titulo', $this->titulo);
         $stmt->bindParam(':descricao', $this->descricao);
         $stmt->bindParam(':prioridade', $this->prioridade);
         $stmt->bindParam(':status', $this->status);
+        $stmt->bindParam(':data_inicio', $this->data_inicio);
+        $stmt->bindParam(':data_fim', $this->data_fim);
         $stmt->bindParam(':tarefa_id', $this->tarefa_id);
 
         if ($stmt->execute()) {
@@ -114,43 +133,51 @@ class Task
     }
 
     // método para atualizar o status de uma tarefa (incluindo data de inicio e fim)
-    public function updateTaskStatus($tarefa_id, $new_status, $data_inicio = null, $data_fim = null) {
-        $query = "UPDATE " . $this->table_name . "
-                  SET status = :new_status,";
+    public function updateTaskStatus($tarefa_id, $new_status, $data_inicio = null, $data_fim = null)
+    {
+        $set_parts = ["status = :new_status"];
+        $bind_values = [];
+
+        $bind_values[':new_status'] = htmlspecialchars(strip_tags($new_status));
+        $bind_values[':tarefa_id'] = htmlspecialchars(strip_tags($tarefa_id));
 
         // adiciona o campo de data se forem passados
         if ($data_inicio !== null) {
-            $query .= ", data_inicio = :data_inicio";
-        }
-        if ($data_fim !== null) {
-            $query .= ", data_fim = :data_fim";
+            $set_parts[] = "data_inicio = :data_inicio";
+            $bind_values[':data_inicio'] = $data_inicio;
+        } else {
+            $set_parts[] = "data_inicio = NULL"; // reseta se não for passado
         }
 
-        $query .= " WHERE tarefa_id = :tarefa_id";
+        if ($data_fim !== null) {
+            $set_parts[] = "data_fim = :data_fim";
+            $bind_values[':data_fim'] = $data_fim;
+        } else {
+            $set_parts[] = "data_fim = NULL"; // reseta se não for passado
+        }
+
+        $query = "UPDATE " . $this->table_name . " SET " . implode(", ", $set_parts) . " WHERE tarefa_id = :tarefa_id";
 
         $stmt = $this->conn->prepare($query);
 
-        $tarefa_id = htmlspecialchars(strip_tags($tarefa_id));
-        $new_status = htmlspecialchars(strip_tags($new_status));
-
-        $stmt->bindParam(':new_status', $new_status);
-        $stmt->bindParam(':tarefa_id', $tarefa_id);
-
-        if ($data_inicio !== null) {
-            $stmt->bindParam(':data_inicio', $data_inicio);
+        // faz bind de todos os valores coletados
+        foreach ($bind_values as $param => $value) {
+            $stmt->bindValue($param, $value);
         }
-        if ($data_fim !== null) {
-            $stmt->bindParam(':data_fim', $data_fim);
-        }
+        error_log("DEBUG SQL: " . $query);
+        error_log("DEBUG Binds: " . print_r($bind_values, true));
+
 
         if ($stmt->execute()) {
             return true;
         }
+        error_log("PDO Error in updateTaskStatus: " . implode(" ", $stmt->errorInfo()));
         return false;
     }
 
     // método para excluir uma tarefa
-    public function deleteTask($tarefa_id) {
+    public function deleteTask($tarefa_id)
+    {
         $query = "DELETE FROM " . $this->table_name . " WHERE tarefa_id = ?";
         $stmt = $this->conn->prepare($query);
 

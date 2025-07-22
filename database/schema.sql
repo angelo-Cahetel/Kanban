@@ -13,11 +13,11 @@ CREATE TABLE tarefas (
     tarefa_id INT AUTO_INCREMENT PRIMARY KEY,
     usuario_id INT NOT NULL,
     titulo VARCHAR(255) NOT NULL,
-    descrecao TEXT,
+    descricao TEXT,
     prioridade ENUM('BAIXA', 'MEDIA', 'ALTA', 'URGENTE') DEFAULT 'MEDIA' NOT NULL, -- adicionando prioridade
-    status ENUM('A_FAZER', 'FAZENDO', 'REVISAO', 'CONCLUIDA') DEFAULT 'A_FAZER' NOT NULL, 
+    status ENUM('A_FAZER', 'EM_ANDAMENTO', 'REVISAO', 'CONCLUIDA') DEFAULT 'A_FAZER' NOT NULL, 
     data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
     data_inicio DATETIME NULL, -- computar o tempo total
-    data_fim DATETIME NILL, -- computar o tempo total
-    FOREING KEY (usuario_id) REFERENCES usuarios(usuario_id)
+    data_fim DATETIME NULL, -- computar o tempo total
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id)
 );

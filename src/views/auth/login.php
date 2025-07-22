@@ -1,3 +1,11 @@
+<?php
+$error = $_SESSION['error_message'] ?? null;
+$success = $_SESSION['success_message'] ?? null;
+unset($_SESSION['error_message']);
+unset($_SESSION['success_message']);
+?>
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -93,12 +101,12 @@
             <p class="success-message"><?= htmlspecialchars($success) ?></p>
         <?php endif; ?>
 
-        <form action="/../public/index.php?action=login" method="POST" class="login-form">
-            <input type="email" name="email" placeholder="Email" required value="<?= htmlspecialchars($_POST['email'] ?? '')?>">
+        <form action="/kanban_app/public/index.php?action=login" method="POST" class="login-form">
+            <input type="email" name="email" placeholder="Email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
             <input type="password" name="senha" placeholder="Senha" required>
             <button type="submit">Entrar</button>
         </form>
-        <p class="register-link">Não tem conta? <a href="/../public/index.php?action=showRegister">Cadastre-se aqui</a></p>
+        <p class="register-link">Não tem conta? <a href="/kanban_app/public/index.php?action=showRegister">Cadastre-se aqui</a></p>
     </div>
 </body>
 

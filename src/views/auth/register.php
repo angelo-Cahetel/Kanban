@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,19 +16,22 @@
             min-height: 100vh;
             margin: 0;
         }
+
         .register-container {
             background-color: #fff;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
             text-align: center;
         }
+
         .register-container h2 {
             margin-bottom: 20px;
             color: #333;
         }
+
         .register-form input[type="text"],
         .register-form input[type="email"],
         .register-form input[type="password"],
@@ -39,6 +43,7 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+
         .register-form button {
             width: 100%;
             padding: 10px;
@@ -49,30 +54,37 @@
             cursor: pointer;
             font-size: 16px;
         }
+
         .register-form button:hover {
             background-color: #218838;
         }
+
         .login-link {
             margin-top: 15px;
             font-size: 0.9em;
         }
+
         .login-link a {
             color: #007bff;
             text-decoration: none;
         }
+
         .login-link a:hover {
             text-decoration: underline;
         }
+
         .error-message {
             color: red;
             margin-bottom: 15px;
         }
+
         .success-message {
             color: green;
             margin-bottom: 15px;
         }
     </style>
 </head>
+
 <body>
     <div class="register-container">
         <h2>Cadastre-se</h2>
@@ -94,7 +106,8 @@
             </select>
             <button type="submit">Cadastrar</button>
         </form>
-        <p class="login-link">Já tem uma conta? <a href="/../public/index.php?action=showLogin">Faça Login</a>.</p>
+        <p class="login-link">Já tem uma conta? <a href="/kanban_app/public/index.php?action=showLogin">Faça Login</a>.</p>
     </div>
 </body>
+
 </html>

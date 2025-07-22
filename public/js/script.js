@@ -40,29 +40,32 @@ $(document).ready(function() {
             // atualiza o status da tarefa para o estado da coluna
             $(draggedItem).data('status', newStatus);
 
-            // Atualiza o status da tarefa no back via AJAX
+            // atualiza o status da tarefa no back via ajax
             $.ajax({
-                url: '/../public/index.php?action=updateTaskStatus',
+                url: '/kanban_app/public/index.php?action=updateTaskStatus',
                 type: 'POST',
                 data: {
-                    task_id: taskId,
+                    tarefa_id: taskId,
                     new_status: newStatus
                 },
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        // console.log('Status da tarefa atualizado com sucesso:', response.message);
-                        if (response.data_inicio || response.data_fim) {
-
+                        console.log('Status da tarefa atualizado com sucesso:', response.message);
+                        if (response.data_inicio) {
+                            $(draggedItem).find('.data-inicio').text(response.data_inicio);
+                        }
+                        if (response.data_fim) {
+                            $(draggedItem).find('.data-fim').text(response.data_fim);
                         }
                     } else {
                         console.error('Erro ao atualizar status da tarefa:', response.message);
-                        // $(`[data-status="${oldStatus}"] .task-list`).append(draggedItem);
+                        $(`[data-status="${oldStatus}"] .task-list`).append(draggedItem);
                     }
                 },
                 error: function(xhr, status, error) {
                     console.error('Erro na requisição AJAX:', error);
-                    // $(`[data-status="${oldStatus}"] .task-list`).append(draggedItem);
+                    $(`[data-status="${oldStatus}"] .task-list`).append(draggedItem);
                 }
             });
         }
@@ -79,15 +82,15 @@ $(document).ready(function() {
     const statusSelect = $('#status');
     const statusField = $('#statusField');
 
-    // Exibir modal para adicionar nova tarefa
+    // exibir modal para adicionar nova tarefa
     $('#addTaskBtn').on('click', function() {
         modalTitle.text('Adicionar Nova Tarefa');
-        taskForm.attr('action', '/../public/index.php?action=createTask');
-        modalTaskId.val(''); // limpa o campo de id
+        taskForm.attr('action', '/kanban_app/public/index.php?action=createTask');
+        modalTaskId.val('');
         titleInput.val('');
         descriptionInput.val('');
         prioritySelect.val('normal'); // define prioridade padrão
-        statusField.hide(); // esconde o campo de status
+        statusField.hide();
         taskModal.css('display', 'flex');
     });
 
@@ -95,7 +98,7 @@ $(document).ready(function() {
     $('.task-list').on('click', 'btn-edit-task', function() {
         const taskData = $(this).data('task');
         modalTitle.text('Editar Tarefa');
-        taskForm.attr('action', '/../public/index.php?action=updateTask');
+        taskForm.attr('action', '/kanban_app/public/index.php?action=updateTask');
         modalTaskId.val(taskData.tarefa_id);
         titleInput.val(taskData.titulo);
         descriptionInput.val(taskData.descricao);
@@ -118,7 +121,6 @@ $(document).ready(function() {
     });
 
     const editTaskData = JSON.parse('<?= $editTaskData ?? "null" ?>');
-    // <?php unset($_SESSION['edit_task_data']); ?>
 
     if (editTaskData) {
         modalTitle.text('Editar Tarefa');
